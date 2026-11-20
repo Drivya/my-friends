@@ -26,3 +26,27 @@ Append-only. Newest entries at the bottom.
 - Owner decisions on Chapter 04 content, crown setting, gift casket, and project location (see `PROJECT_STATUS.md`).
 - Reference screenshots/video, Stitch HTML, photographs, event details and tiara asset not yet supplied.
 - Milestone 1 (runtime foundation) not started.
+
+## 2026-11-20 — Audit pass 2: Stitch export and reference screenshots
+### Summary
+- Inspected the uploaded Stitch export (zip: `code.html`, `screen.png`, `DESIGN.md`) and 8 unique reference screenshots (9 files; 5 and 6 identical).
+- Found that `/references`, `/stitch-export`, `/assets` and `README.md` (named in the handoff) did not exist in the repository.
+- No application code was written.
+### Added
+- `stitch-export/code.html`, `stitch-export/screen.png`, `stitch-export/DESIGN.md`: the Stitch export, byte-identical to the zip contents.
+- `references/README.md`: written catalogue of every screenshot (geometry, materials, light, UI, confirmed copy, video thumbnail order).
+### Changed
+- `CLAUDE.md` §3, `DESIGN.md` §6.2 / §11 tree / §15 / §16, `ARCHITECTURE.md` §3 / §4 / §7.3 / §14.1 / §18.3 / §21: removed the nine-blue-eye motif requirement. Reason: owner instruction ("ignore the purple eyes"). The row is a video-editing emoji overlay, not part of the product.
+- `PROJECT_STATUS.md`: rewritten with per-chamber reference availability, resolved decisions (R1–R5), pending decisions (D1–D6) and the full missing-content list.
+### Fixed
+- Earlier audit issue "token mismatch": the Palatial Heritage tokens were in the Stitch `DESIGN.md`, now committed.
+- Earlier audit issue "crown setting": resolved by screenshots 8 and 9 (tiara pedestal inside the garden gazebo).
+### Removed
+- None. Reference images were deliberately **not** committed: the repository is public, and the images contain real people's photos and a personal Instagram handle.
+### Verification
+- `sha256sum` of `stitch-export/*` matches the zip contents.
+- Repository visibility checked via GitHub search API: `Drivya/my-friends` is public.
+- Spec amendment script asserted exactly one match per replacement; post-edit `grep` shows no remaining eye-motif requirement.
+- Tests / typecheck / lint / build: not run (no project exists yet).
+### Outstanding
+- Owner decisions D1–D6; reference video; missing stills; owner text and photos (see `PROJECT_STATUS.md`).

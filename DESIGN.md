@@ -577,23 +577,9 @@ Examples: - `THE ARRIVAL · 01 / 05` - `THE GRAND ENTRANCE · 02 / 05` -
 `THE ROYAL GALLERY · 03 / 05` - `THE GRAND BALLROOM · 04 / 05` -
 `THE ROSE GARDEN · 05 / 05`
 
-### 6.2 Blue eye-shaped motif
+### 6.2 Blue eye-shaped motif (removed)
 
-The screenshots show a horizontal row of nine blue evil-eye symbols near
-the top of the scene.
-
--   Preserve this motif as a recognisable decorative signature of the
-    reference.
--   Use nine evenly spaced symbols, matching the reference count.
--   Keep their scale, spacing, and horizontal alignment consistent
-    across chapters.
--   They are decorative unless the existing implementation explicitly
-    uses them as controls.
--   Do not reinterpret them as a loading spinner or replace them with
-    generic dots.
--   They should not overpower the chapter label or block the main scene.
--   On narrow screens, scale them down or reduce spacing while retaining
-    all nine symbols if possible.
+**Removed by owner instruction (2026-11-20).** The row of nine blue eye symbols (🧿) seen in the reference screenshots is an emoji overlay added when the video was edited, like the Instagram watermark. It is not part of the product: do not implement it. The five-dash chapter progress beneath the chapter label remains.
 
 ### 6.3 Typography
 
@@ -817,7 +803,6 @@ src/
     content
   components/
     ChapterHeader
-    EyeMotif
     SceneTransition
     PrimaryButton
     SoundToggle
@@ -1063,8 +1048,8 @@ checked.
 -   [ ] The crown appears on a burgundy cushion on a pale pedestal.
 -   [ ] The camera finale shows the visitor with the tiara overlay when
     permission and tracking are available.
--   [ ] The nine blue eye-shaped symbols and five-chapter progress
-    treatment are preserved.
+-   [ ] The five-chapter progress treatment is preserved (no eye-symbol
+    row: removed by owner instruction, see §6.2).
 
 ### Functional flow
 
@@ -1113,7 +1098,7 @@ Claude Code should work in this order:
 3.  **Create the five-chapter experience state model.** Ensure the
     reveal states are nested within Chapter 05.
 4.  **Implement the persistent UI system.** Chapter header, progress,
-    nine-eye motif, sound toggle, navigation, and CTA styling.
+    sound toggle, navigation, and CTA styling.
 5.  **Build the environments in order.** Arrival, Grand Entrance, Royal
     Gallery, Grand Ballroom, Rose Garden.
 6.  **Add the personal gallery using configurable image data.**

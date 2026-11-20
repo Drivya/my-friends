@@ -39,7 +39,7 @@ Preserve:
 - Polished, game-like 3D style — not photorealistic, crude cartoon, or static image parallax.
 - Warm cream/beige architecture, burgundy accents, muted gold, dark green gardens, roses, and sunset lighting.
 - Five primary chapters and all twelve named chambers in `ARCHITECTURE.md`.
-- Nine blue eye-shaped decorative progress symbols.
+- Five-dash chapter progress beneath the chapter label. (The nine blue eye symbols were removed by owner instruction on 2026-11-20: they are a video-editing overlay, not part of the product.)
 - Palace exterior, entrance/staircase, gallery, personal photographs, salon, message exhibition, Rose Garden, gift/reliquary, envelope, crown/tiara, portrait, and finale.
 - Optional live selfie/crown effect with explicit permission and graceful fallbacks.
 - Personalised invitation for Princess Gahana Ray.

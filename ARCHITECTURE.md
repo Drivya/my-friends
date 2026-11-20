@@ -167,7 +167,6 @@ Browser
     │   └── ExperienceOverlay
     │       ├── ChapterHeader
     │       ├── FiveChapterProgress
-    │       ├── NineEyeMotif
     │       ├── BackControl
     │       ├── SoundToggle
     │       ├── PrimaryActions
@@ -301,7 +300,6 @@ royal-palace/
 │   ├── overlays/
 │   │   ├── ChapterHeader.tsx
 │   │   ├── FiveChapterProgress.tsx
-│   │   ├── NineEyeMotif.tsx
 │   │   ├── ImperialNavigator.tsx
 │   │   ├── SoundToggle.tsx
 │   │   ├── MemoryModal.tsx
@@ -836,17 +834,9 @@ Examples:
 - `THE GRAND BALLROOM · 04 / 05`
 - `THE ROSE GARDEN · 05 / 05`
 
-### 7.3 Nine blue eye-shaped symbols
+### 7.3 Nine blue eye-shaped symbols (removed)
 
-The video shows a row of nine blue eye-shaped symbols at the top of each chapter.
-
-- Preserve nine symbols as the decorative progress motif.
-- It is an intentional visual signature, not a loading indicator.
-- Keep size/spacing/alignment consistent.
-- It may be decorative rather than interactive.
-- It must not obscure the chapter title or focal scene.
-- Responsive scaling is allowed, but retain nine symbols where possible.
-- Use a custom icon or provided asset; do not substitute generic circles/dots.
+**Removed by owner instruction (2026-11-20).** The row of nine blue eye symbols (🧿) seen in the reference screenshots is an emoji overlay added when the video was edited, like the Instagram watermark. It is not part of the product: do not implement it. The five-dash chapter progress beneath the chapter label remains.
 
 ### 7.4 Imperial Navigator from Stitch HTML
 
@@ -1306,7 +1296,7 @@ Fallback:
 
 The visual reference is vertical. Prioritise 9:16 composition:
 - Camera framing is authored for portrait first.
-- Chapter title and nine-eye motif fit within the top safe area.
+- Chapter title and chapter progress fit within the top safe area.
 - The main scene occupies almost the entire viewport.
 - The primary action is placed above the bottom safe area.
 - Do not put a permanent full-width conventional navigation header over the scene.
@@ -1458,7 +1448,7 @@ Specifically verify:
 - Garden path, formal hedges, roses, fountain, gazebo, distant palace.
 - Envelope/pedestal composition.
 - Silver tiara on burgundy cushion.
-- Top chapter label, nine blue eye motifs, sound icon, and button placement.
+- Top chapter label, five-dash progress, sound icon, and button placement.
 
 ### 18.4 Device QA
 
@@ -1592,7 +1582,7 @@ The application is complete only when:
 - All five primary chapters and all twelve named chambers are represented.
 - The first-person camera travels through connected environments.
 - The visual style matches the supplied stylised low-poly reference.
-- The nine blue eye motifs and five-chapter top progress treatment are preserved.
+- The five-chapter top progress treatment is preserved (eye symbols removed by owner instruction, §7.3).
 - The optional twelve-chamber navigator works without dominating mobile.
 - All personal photographs are owner-provided and interactive.
 - Memory Inspection Modal works.
