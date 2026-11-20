@@ -1,0 +1,880 @@
+<title>Vault Door Cutaway</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column. A 16:9 stage, then a caption strip and transport bar, then the script beside production notes. */
+:root{
+  --bg:#eceff0; --surface:#e0e5e7; --raised:#f7f8f9; --fg:#172027; --muted:#55626b; --line:#c3cbd0;
+  --accent:#94600f; --accent-ink:#fffaf0; --stage:#d3d9dc;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111518; --surface:#192025; --raised:#1f272d; --fg:#e4e9ec; --muted:#93a0a8; --line:#2c363d;
+    --accent:#dba84e; --accent-ink:#1a1206; --stage:#0d1114; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111518; --surface:#192025; --raised:#1f272d; --fg:#e4e9ec; --muted:#93a0a8; --line:#2c363d;
+  --accent:#dba84e; --accent-ink:#1a1206; --stage:#0d1114; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(2.1rem,5.2vw,3.5rem);line-height:1;margin:0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.dek{margin:4px 0 0;max-width:62ch;color:var(--muted)}
+
+.player{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--raised)}
+.stage{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;background:var(--stage);overflow:hidden;touch-action:none}
+@media (max-width:600px){.stage{aspect-ratio:4/3}}
+.stage canvas{display:block;width:100%;height:100%;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.chip{position:absolute;top:12px;left:12px;display:flex;gap:8px;align-items:baseline;padding:6px 10px;border-radius:4px;background:color-mix(in srgb,var(--raised) 86%,transparent);border:1px solid var(--line);pointer-events:none}
+.chip b{font-family:var(--f-mono);font-weight:500;font-size:12px;color:var(--accent)}
+.chip span{font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:.03em;text-transform:uppercase}
+.hint{position:absolute;right:12px;bottom:10px;font-family:var(--f-mono);font-size:11px;color:var(--muted);pointer-events:none;letter-spacing:.04em}
+.fail{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--muted)}
+.tags{position:absolute;inset:0;pointer-events:none}
+.tag{position:absolute;left:0;top:0;transition:opacity .35s ease;opacity:0}
+.tag.on{opacity:1}
+.tag i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.tag em{position:absolute;left:0;top:0;width:18px;height:1px;background:var(--accent);transform-origin:0 0;transform:rotate(-40deg)}
+.tag span{position:absolute;left:14px;top:-34px;white-space:nowrap;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:3px;background:var(--raised);color:var(--fg);border:1px solid var(--line)}
+.tag.flip em{transform:rotate(-140deg)}
+.tag.flip span{left:auto;right:14px}
+
+.caption{padding:14px 16px 10px;min-height:5.4em;font-size:clamp(15px,1.7vw,18px);line-height:1.5;border-top:1px solid var(--line)}
+.caption .w{color:var(--muted);transition:color .2s}
+.caption .w.on{color:var(--fg)}
+.caption[hidden]{display:none!important}
+
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px 14px}
+.play{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer;flex:none}
+.play svg{width:18px;height:18px}
+.time{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);flex:none}
+.scrub{position:relative;flex:1 1 220px;min-width:0;height:28px;display:flex;align-items:center}
+.ticks{position:absolute;left:0;right:0;top:50%;height:12px;transform:translateY(-50%);pointer-events:none}
+.ticks i{position:absolute;top:0;width:1px;height:12px;background:var(--muted);opacity:.55}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0;position:relative;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--fg);margin-top:-5px;border:2px solid var(--raised)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--fg);border:2px solid var(--raised)}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.tog{font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:7px 10px;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.tog[aria-pressed="true"]{background:var(--surface);color:var(--fg);border-color:var(--muted)}
+.tog:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,label.tog:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+
+.below{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.below{grid-template-columns:minmax(0,1fr)}}
+h2{font-family:var(--f-display);font-weight:600;font-size:1.5rem;text-transform:uppercase;letter-spacing:.03em;margin:0 0 10px}
+.script ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.beat{width:100%;text-align:left;display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:4px 12px;padding:12px 12px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.beat:hover{background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.beat.cur{background:var(--surface)}
+.beat .n{font-family:var(--f-display);font-weight:700;font-size:1.6rem;line-height:1;color:var(--muted)}
+.beat.cur .n{color:var(--accent)}
+.beat .hd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.beat .tt{font-family:var(--f-display);font-weight:600;font-size:1.2rem;text-transform:uppercase;letter-spacing:.03em}
+.beat .tc{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.beat .tx{grid-column:2;color:var(--muted);max-width:66ch}
+.beat.cur .tx{color:var(--fg)}
+.notes{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--raised)}
+.notes dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.notes dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.notes dd{margin:2px 0 0;color:var(--muted);font-size:14px}
+.notes dd b{color:var(--fg);font-weight:500}
+@media (prefers-reduced-motion:reduce){.tag,.caption .w{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Animated cutaway · Three.js · <span id="runtime">1:40</span></div>
+    <h1>How a vault door locks</h1>
+    <p class="dek">A quarter of the door is cut away so you can watch the handwheel throw the bolts, then see the combination lock, the time lock and the glass relocker each block the boltwork on its own.</p>
+  </header>
+
+  <section class="player" aria-label="Animation player">
+    <div class="stage" id="stage">
+      <canvas id="scene" aria-label="3D cutaway of a round bank vault door"></canvas>
+      <div class="tags" id="tags"></div>
+      <div class="chip"><b id="chipN">01</b><span id="chipT">The door</span></div>
+      <div class="hint">Drag to look around</div>
+    </div>
+    <div class="caption" id="caption" aria-live="polite"></div>
+    <div class="transport">
+      <button class="play" id="play" aria-label="Pause">
+        <svg id="icoPause" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
+        <svg id="icoPlay" viewBox="0 0 24 24" fill="currentColor" hidden><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+      </button>
+      <span class="time" id="time">0:00 / 1:40</span>
+      <div class="scrub"><div class="ticks" id="ticks"></div><input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Timeline"></div>
+      <div class="toggles">
+        <button class="tog" id="voice" aria-pressed="false" title="Read the script aloud with your browser's voice">Narrate</button>
+        <button class="tog" id="caps" aria-pressed="true">Captions</button>
+        <button class="tog" id="lbls" aria-pressed="true">Labels</button>
+        <label class="tog" id="voLabel" for="voFile" title="Load a recorded voiceover; chapters stretch to fit its length">Load VO audio<input type="file" id="voFile" accept="audio/*" hidden></label>
+      </div>
+    </div>
+  </section>
+
+  <div class="below">
+    <section class="script" aria-label="Voiceover script">
+      <h2>Voiceover script</h2>
+      <ol id="beats"></ol>
+    </section>
+    <aside class="notes">
+      <h2 style="margin:0">Production notes</h2>
+      <dl>
+        <div><dt>Timing</dt><dd>Each chapter runs as long as its line takes to read at about <b>155 words a minute</b>. Load a recorded voiceover and every chapter stretches in proportion to the recording's length.</dd></div>
+        <div><dt>Narrate</dt><dd>Uses your browser's built-in voice as a scratch track. Each chapter waits for its line to finish before moving on.</dd></div>
+        <div><dt>The cut</dt><dd>The upper-right quarter is removed down to the bolt centerline. Orange hatching marks cut steel, as on a machinist's section drawing.</dd></div>
+        <div><dt>Simplified</dt><dd>Real doors mount the lock cases on the inside face and block a boltwork bar rather than a central hub. Here all three blockers sit in one cavity so a single cut shows them together.</dd></div>
+        <div><dt>Build</dt><dd>Three.js r160, one HTML file, no image or audio assets. Every frame is a function of the timeline, so scrubbing backward rebuilds the scene exactly.</dd></div>
+      </dl>
+    </aside>
+  </div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---------- script ---------- */
+const BEATS = [
+  {title:'The door', text:'A bank vault door can weigh more than twenty tons, yet one person can lock it in under a minute. Here is what happens inside.', labels:['door','hinge']},
+  {title:'Closing', text:'The door swings shut on a heavy hinge. Its edge fits the steel frame so closely that there is barely room for a sheet of paper.', labels:['hinge','frame']},
+  {title:'The cut', text:'To see the mechanism, we cut away a quarter of the door and the frame around it.', labels:['section']},
+  {title:'Handwheel', text:'Turning the handwheel rotates a spindle and a cam plate at the center of the door. Linkage arms turn that rotation into straight, outward motion.', labels:['wheel','cam','link']},
+  {title:'Boltwork', text:'Twelve hardened steel bolts slide out into the frame, all the way around. Now the door cannot be pulled free, even if the hinge were cut off.', labels:['bolt','seat']},
+  {title:'Combination lock', text:'Next comes the combination lock. Spinning the dial scrambles its wheels, and a locking lever drops into a slot in the hub. The boltwork can no longer turn.', labels:['dial','combCase','combLever']},
+  {title:'Time lock', text:'Beside it sits a time lock with three separate clock movements. Until they run down, a second lever stays in the hub, so even the right combination will not open the door.', labels:['timeCase','clocks','timeLever']},
+  {title:'Relocker', text:'The last defense is the relocker. A tempered glass plate holds back a spring-loaded bolt. If a burglar drills through the door, the glass shatters, the relocker fires, and the boltwork stays jammed until a technician cuts it free.', labels:['drill','glass','relocker']},
+  {title:'Three locks in one', text:'Steel bolts, clockwork and a sheet of glass make three independent locks. Any one of them is enough to keep the vault shut.', labels:[]},
+];
+let acc = 0;
+for (const b of BEATS) {
+  b.words = b.text.split(/\s+/);
+  b.dur = Math.max(6, b.words.length / 2.6 + 1.6);
+  b.start = acc; acc += b.dur; b.end = acc;
+}
+const TOTAL = acc;
+
+/* ---------- helpers ---------- */
+const DEG = Math.PI / 180;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+const frac = x => x - Math.floor(x);
+function rngFrom(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const stageEl = $('stage'), canvas = $('scene');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+} catch (e) {
+  const d = document.createElement('div'); d.className = 'fail';
+  d.textContent = 'This animation needs WebGL, which this browser has turned off. The script below still reads start to finish.';
+  stageEl.appendChild(d);
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xd3d9dc, 17, 44);
+const camera = new THREE.PerspectiveCamera(35, 16 / 9, 0.1, 120);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a3630, 0.45));
+const key = new THREE.DirectionalLight(0xfff3e2, 2.1);
+key.position.set(6, 9, 8); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xdfe8ff, 0.55); fill.position.set(-7, 3, 6); scene.add(fill);
+
+function applyTheme(){
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim() || '#d3d9dc';
+  const c = new THREE.Color(v);
+  scene.background = c; scene.fog.color.copy(c);
+}
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ---------- materials ---------- */
+function hatch(){
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#d0802a'; g.fillRect(0, 0, 64, 64);
+  g.strokeStyle = '#8a4a12'; g.lineWidth = 5;
+  for (let i = -64; i < 128; i += 16) { g.beginPath(); g.moveTo(i, 64); g.lineTo(i + 64, 0); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+const S = o => new THREE.MeshStandardMaterial(o);
+const mat = {
+  door: S({ color: 0x9aa1a8, metalness: .85, roughness: .34 }),
+  plate: S({ color: 0x9aa1a8, metalness: .85, roughness: .34 }),
+  doorQuad: S({ color: 0x9aa1a8, metalness: .85, roughness: .34 }),
+  frame: S({ color: 0x7c848b, metalness: .8, roughness: .44 }),
+  frameQuad: S({ color: 0x7c848b, metalness: .8, roughness: .44 }),
+  wall: S({ color: 0x8c877f, metalness: 0, roughness: .93 }),
+  floor: S({ color: 0x6c6862, metalness: 0, roughness: .96 }),
+  room: S({ color: 0x34383c, metalness: 0, roughness: .95, side: THREE.BackSide }),
+  bolt: S({ color: 0xd6dade, metalness: 1, roughness: .17 }),
+  link: S({ color: 0x6f8191, metalness: .8, roughness: .33 }),
+  cam: S({ color: 0xa67e46, metalness: .9, roughness: .3 }),
+  wheel: S({ color: 0xcfd2d6, metalness: 1, roughness: .14 }),
+  comb: S({ color: 0x353c43, metalness: .6, roughness: .42 }),
+  combLever: S({ color: 0xbcc2c8, metalness: .95, roughness: .22 }),
+  time: S({ color: 0x353c43, metalness: .6, roughness: .42 }),
+  timeLever: S({ color: 0xbcc2c8, metalness: .95, roughness: .22 }),
+  relHouse: S({ color: 0x353c43, metalness: .6, roughness: .42 }),
+  relocker: S({ color: 0xb8392b, metalness: .5, roughness: .38 }),
+  hinge: S({ color: 0x5e656c, metalness: .85, roughness: .38 }),
+  dark: S({ color: 0x16191c, metalness: .2, roughness: .8 }),
+  cut: S({ map: hatch(), metalness: .15, roughness: .62, side: THREE.DoubleSide }),
+  glass: S({ color: 0xa8e0ee, metalness: 0, roughness: .05, transparent: true, opacity: .4, side: THREE.DoubleSide, depthWrite: false }),
+  shard: S({ color: 0xc9eef7, metalness: 0, roughness: .05, transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false }),
+  drill: S({ color: 0x2b2f33, metalness: .4, roughness: .5 }),
+  bit: S({ color: 0xe1c27a, metalness: 1, roughness: .2 }),
+};
+const HL = new THREE.Color(0xe7a53c);
+const hlMats = ['bolt','link','cam','wheel','comb','combLever','time','timeLever','relocker','relHouse','hinge','glass'];
+
+/* ---------- geometry ---------- */
+const R = 2.0, T = 0.9, H = T / 2, ZC = -0.14, RIM_IN = 1.72, PLATE_Z = 0.27, FR_IN = 2.02, FR_OUT = 2.9;
+const Q = Math.PI / 2, FULL = Math.PI * 2;
+
+function sectorShape(rIn, rOut, a0, a1){
+  const s = new THREE.Shape();
+  if (a1 - a0 >= FULL - 1e-6) {
+    s.absarc(0, 0, rOut, 0, FULL, false);
+    if (rIn > 0) { const h = new THREE.Path(); h.absarc(0, 0, rIn, 0, FULL, true); s.holes.push(h); }
+    return s;
+  }
+  s.moveTo(rOut * Math.cos(a0), rOut * Math.sin(a0));
+  s.absarc(0, 0, rOut, a0, a1, false);
+  if (rIn > 0) { s.lineTo(rIn * Math.cos(a1), rIn * Math.sin(a1)); s.absarc(0, 0, rIn, a1, a0, true); }
+  else s.lineTo(0, 0);
+  s.closePath();
+  return s;
+}
+function slab(rIn, rOut, z0, z1, a0 = 0, a1 = FULL){
+  const g = new THREE.ExtrudeGeometry(sectorShape(rIn, rOut, a0, a1), { depth: z1 - z0, bevelEnabled: false, curveSegments: 72 });
+  g.translate(0, 0, z0); return g;
+}
+function cutFace(rIn, rOut, z0, z1, a, side){
+  const c = Math.cos(a), s = Math.sin(a), o = 0.003 * side, nx = -s * o, ny = c * o;
+  const pos = [], uv = [];
+  for (const [r, z] of [[rIn, z0], [rOut, z0], [rOut, z1], [rIn, z1]]) { pos.push(r * c + nx, r * s + ny, z); uv.push(r * 4, z * 4); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals();
+  return g;
+}
+function sectorPlane(rIn, rOut, z, a0, a1){
+  const g = new THREE.ShapeGeometry(sectorShape(rIn, rOut, a0, a1), 48);
+  const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 4, uv.getY(i) * 4);
+  g.translate(0, 0, z); return g;
+}
+const cylZ = (r, len, seg = 32) => new THREE.CylinderGeometry(r, r, len, seg).rotateX(Math.PI / 2);
+const cylX = (r, len, seg = 24) => new THREE.CylinderGeometry(r, r, len, seg).rotateZ(-Math.PI / 2);
+function add(parent, geo, m, x = 0, y = 0, z = 0, shadow = true){
+  const o = new THREE.Mesh(geo, m); o.position.set(x, y, z);
+  o.castShadow = shadow; o.receiveShadow = true; parent.add(o); return o;
+}
+function anchor(parent, x, y, z){ const o = new THREE.Object3D(); o.position.set(x, y, z); parent.add(o); return o; }
+const polar = (r, a, z = 0) => [r * Math.cos(a), r * Math.sin(a), z];
+
+/* wall, floor, room behind */
+{
+  const sh = new THREE.Shape();
+  sh.moveTo(-14, -3.2); sh.lineTo(14, -3.2); sh.lineTo(14, 8); sh.lineTo(-14, 8); sh.closePath();
+  const h = new THREE.Path(); h.absarc(0, 0, FR_OUT, 0, FULL, true); sh.holes.push(h);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: T, bevelEnabled: false, curveSegments: 96 }); g.translate(0, 0, -H);
+  add(scene, g, mat.wall);
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(90, 60).rotateX(-Math.PI / 2), mat.floor);
+  f.position.y = -3.2; f.receiveShadow = true; scene.add(f);
+  const room = new THREE.Mesh(new THREE.BoxGeometry(11, 6.4, 9), mat.room); room.position.set(0, 0, -H - 4.5); scene.add(room);
+}
+
+/* frame (static) */
+const quadFrame = new THREE.Group(); scene.add(quadFrame);
+add(scene, slab(FR_IN, FR_OUT, -H, ZC), mat.frame);
+add(scene, slab(FR_IN, FR_OUT, ZC, H, Q, FULL), mat.frame);
+add(quadFrame, slab(FR_IN, FR_OUT, ZC, H, 0, Q), mat.frameQuad);
+add(scene, cutFace(FR_IN, FR_OUT, ZC, H, 0, 1), mat.cut, 0, 0, 0, false);
+add(scene, cutFace(FR_IN, FR_OUT, ZC, H, Q, -1), mat.cut, 0, 0, 0, false);
+add(scene, sectorPlane(FR_IN, FR_OUT, ZC + 0.002, 0, Q), mat.cut, 0, 0, 0, false);
+
+/* hinge, static half */
+for (const y of [0.62, -0.62]) {
+  add(scene, new THREE.CylinderGeometry(0.14, 0.14, 0.5, 32), mat.hinge, -2.35, y, 0.75);
+  add(scene, new THREE.BoxGeometry(0.5, 0.5, 0.32), mat.hinge, -2.55, y, 0.6);
+}
+add(scene, new THREE.CylinderGeometry(0.055, 0.055, 2.0, 16), mat.hinge, -2.35, 0, 0.75);
+
+/* door: pivot -> doorRoot (door centre at origin when closed) */
+const pivot = new THREE.Group(); pivot.position.set(-2.35, 0, 0.75); scene.add(pivot);
+const doorRoot = new THREE.Group(); doorRoot.position.set(2.35, 0, -0.75); pivot.add(doorRoot);
+const quadDoor = new THREE.Group(); doorRoot.add(quadDoor);
+
+add(doorRoot, slab(0, RIM_IN, -H, -0.27), mat.door);                 // back plate
+add(doorRoot, slab(RIM_IN, R, -H, ZC), mat.door);                    // rim, behind the cut
+add(doorRoot, slab(RIM_IN, R, ZC, H, Q, FULL), mat.door);            // rim, front 270°
+add(quadDoor, slab(RIM_IN, R, ZC, H, 0, Q), mat.doorQuad);           // rim, removable quarter
+const plate = add(doorRoot, slab(0, RIM_IN, PLATE_Z, H, Q, FULL), mat.plate);
+add(quadDoor, slab(0, RIM_IN, PLATE_Z, H, 0, Q), mat.doorQuad);
+for (const [r0, r1, z0] of [[RIM_IN, R, ZC], [0, RIM_IN, PLATE_Z]]) {
+  add(doorRoot, cutFace(r0, r1, z0, H, 0, 1), mat.cut, 0, 0, 0, false);
+  add(doorRoot, cutFace(r0, r1, z0, H, Q, -1), mat.cut, 0, 0, 0, false);
+}
+add(doorRoot, sectorPlane(RIM_IN, R, ZC + 0.002, 0, Q), mat.cut, 0, 0, 0, false);
+for (let k = 0; k < 24; k++) {           // rivet heads on the face
+  const a = (k * 15 + 7.5) * DEG;
+  add(a < Q ? quadDoor : doorRoot, cylZ(0.05, 0.03, 16), a < Q ? mat.doorQuad : mat.door, ...polar(1.86, a, H + 0.015));
+}
+add(doorRoot, new THREE.BoxGeometry(0.8, 0.6, 0.23), mat.hinge, -1.95, 0, 0.565); // hinge arm
+add(doorRoot, new THREE.CylinderGeometry(0.14, 0.14, 0.62, 32), mat.hinge, -2.35, 0, 0.75);
+
+/* bolt channels on the cut faces */
+for (const a of [15, 45, 75]) {
+  for (const [r0, r1, par] of [[RIM_IN, R, doorRoot], [FR_IN, 2.62, scene]]) {
+    const m = add(par, new THREE.BoxGeometry(r1 - r0, 0.24, 0.004), mat.dark, ...polar((r0 + r1) / 2, a * DEG, ZC + 0.005), false);
+    m.rotation.z = a * DEG;
+  }
+}
+
+/* cam plate + hub + handwheel (rotate together) */
+const camG = new THREE.Group(); doorRoot.add(camG);
+{
+  const sh = sectorShape(0, 0.8, 0, FULL);
+  for (let k = 0; k < 6; k++) { const h = new THREE.Path(); const [x, y] = polar(0.58, k * 60 * DEG); h.absarc(x, y, 0.07, 0, FULL, true); sh.holes.push(h); }
+  const g = new THREE.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: false, curveSegments: 64 }); g.translate(0, 0, -0.25);
+  add(camG, g, mat.cam);
+  add(camG, cylZ(0.42, 0.43, 64), mat.cam, 0, 0, 0.025);
+  for (const a of [112, 135, 158]) {
+    const m = add(camG, new THREE.BoxGeometry(0.05, 0.12, 0.12), mat.dark, ...polar(0.405, a * DEG, 0.16), false);
+    m.rotation.z = a * DEG;
+  }
+  add(camG, cylZ(0.07, 0.8), mat.wheel, 0, 0, 0.62);
+  add(camG, cylZ(0.15, 0.16), mat.wheel, 0, 0, 1.02);
+  const rim = add(camG, new THREE.TorusGeometry(0.62, 0.042, 16, 96), mat.wheel, 0, 0, 1.02);
+  for (let k = 0; k < 4; k++) {
+    const a = (45 + 90 * k) * DEG;
+    const s = add(camG, cylX(0.034, 0.8), mat.wheel, ...polar(0.4, a, 1.02)); s.rotation.z = a;
+    add(camG, new THREE.SphereGeometry(0.07, 24, 16), mat.wheel, ...polar(0.82, a, 1.02));
+  }
+}
+
+/* bolts + linkage */
+const RC = 0.7, LINK = 1.05, S0 = 1.25;
+const PHI0 = -Math.acos((S0 * S0 + RC * RC - LINK * LINK) / (2 * S0 * RC));
+const boltS = phi => RC * Math.cos(phi) + Math.sqrt(LINK * LINK - (RC * Math.sin(phi)) ** 2);
+const bolts = [];
+for (let i = 0; i < 12; i++) {
+  const th = (15 + 30 * i) * DEG;
+  const g = new THREE.Group(); g.rotation.z = th; doorRoot.add(g);
+  const c = new THREE.Group(); g.add(c);
+  add(c, cylX(0.11, 0.7, 32), mat.bolt, 0.35, 0, 0);
+  add(c, new THREE.CylinderGeometry(0.075, 0.11, 0.05, 32).rotateZ(-Math.PI / 2), mat.bolt, 0.725, 0, 0);
+  add(c, cylZ(0.04, 0.1, 16), mat.link, 0.02, 0, -0.1);
+  add(camG, cylZ(0.045, 0.12, 16), mat.link, ...polar(RC, th, -0.13));
+  const link = add(doorRoot, new THREE.BoxGeometry(1, 0.09, 0.04), mat.link, 0, 0, -0.125);
+  bolts.push({ th, c, link });
+}
+
+/* combination lock */
+const COMB_A = 112 * DEG, TIME_A = 158 * DEG, REL_A = 135 * DEG;
+const combG = new THREE.Group(); combG.rotation.z = COMB_A; doorRoot.add(combG);
+add(combG, new THREE.BoxGeometry(0.42, 0.34, 0.12), mat.comb, 1.05, 0, 0.17);
+const combLever = add(combG, new THREE.BoxGeometry(0.36, 0.08, 0.06), mat.combLever, 0.82, 0, 0.16);
+function dialTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#1d2226'; g.fillRect(0, 0, 256, 256);
+  g.translate(128, 128); g.strokeStyle = '#e9e4d8'; g.fillStyle = '#e9e4d8';
+  g.font = '600 20px "IBM Plex Mono", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let i = 0; i < 100; i++) {
+    const a = i / 100 * FULL - Math.PI / 2, L = i % 10 === 0 ? 22 : i % 5 === 0 ? 14 : 8;
+    g.lineWidth = i % 10 === 0 ? 3 : 1.5;
+    g.beginPath(); g.moveTo(Math.cos(a) * 124, Math.sin(a) * 124); g.lineTo(Math.cos(a) * (124 - L), Math.sin(a) * (124 - L)); g.stroke();
+    if (i % 10 === 0) g.fillText(String(i), Math.cos(a) * 82, Math.sin(a) * 82);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const dialG = new THREE.Group(); dialG.position.set(...polar(1.05, COMB_A, H)); doorRoot.add(dialG);
+add(dialG, cylZ(0.29, 0.03, 48), mat.combLever, 0, 0, 0.015);
+add(dialG, new THREE.BoxGeometry(0.03, 0.06, 0.02), mat.bit, 0, 0.27, 0.04);
+add(dialG, cylZ(0.03, 0.24), mat.combLever, 0, 0, -0.11);
+const knob = new THREE.Group(); dialG.add(knob);
+{
+  const g = new THREE.CylinderGeometry(0.235, 0.235, 0.06, 64).rotateX(Math.PI / 2);
+  const side = S({ color: 0x2a3036, metalness: .7, roughness: .35 });
+  const face = S({ map: dialTexture(), metalness: .3, roughness: .45 });
+  add(knob, g, [side, face, side], 0, 0, 0.06);
+  add(knob, cylZ(0.085, 0.12, 32), side, 0, 0, 0.15);
+}
+mat.dialFace = knob.children[0].material[1];
+
+/* time lock */
+const timeG = new THREE.Group(); timeG.rotation.z = TIME_A; doorRoot.add(timeG);
+add(timeG, new THREE.BoxGeometry(0.5, 0.46, 0.12), mat.time, 1.1, 0, 0.17);
+const timeLever = add(timeG, new THREE.BoxGeometry(0.36, 0.08, 0.06), mat.timeLever, 0.82, 0, 0.16);
+function clockTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = '#efe9dc'; g.fillRect(0, 0, 128, 128); g.translate(64, 64); g.strokeStyle = '#222';
+  for (let i = 0; i < 12; i++) { const a = i / 12 * FULL; g.lineWidth = i % 3 ? 3 : 6; g.beginPath(); g.moveTo(Math.cos(a) * 60, Math.sin(a) * 60); g.lineTo(Math.cos(a) * 46, Math.sin(a) * 46); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const hands = [];
+{
+  const ct = clockTexture();
+  const rimM = S({ color: 0xc7a35a, metalness: 1, roughness: .25 });
+  const faceM = S({ map: ct, roughness: .6 });
+  const handM = S({ color: 0x15181b, roughness: .5 });
+  [-0.15, 0, 0.15].forEach((y, k) => {
+    add(timeG, cylZ(0.072, 0.01, 40), [rimM, faceM, rimM], 1.1, y, 0.235, false);
+    const mh = new THREE.Group(); mh.position.set(1.1, y, 0.242); timeG.add(mh);
+    add(mh, new THREE.BoxGeometry(0.06, 0.008, 0.004).translate(0.03, 0, 0), handM, 0, 0, 0, false);
+    const hh = new THREE.Group(); hh.position.set(1.1, y, 0.246); timeG.add(hh);
+    add(hh, new THREE.BoxGeometry(0.04, 0.012, 0.004).translate(0.02, 0, 0), handM, 0, 0, 0, false);
+    hands.push({ mh, hh, ph: k * 1.7 });
+  });
+}
+
+/* relocker */
+const relG = new THREE.Group(); relG.rotation.z = REL_A; doorRoot.add(relG);
+add(relG, new THREE.BoxGeometry(0.34, 0.16, 0.1), mat.relHouse, 0.98, 0, 0.17);
+const plunger = add(relG, cylX(0.045, 0.34), mat.relocker, 0.83, 0, 0.17);
+const wire = new THREE.Group(); relG.add(wire);
+add(wire, cylZ(0.009, 0.06, 8), mat.relocker, 1.42, 0, 0.228, false);
+add(wire, cylX(0.009, 0.27, 8), mat.relocker, 1.285, 0, 0.2, false);
+
+/* glass plate + shards */
+const GZ = 0.257, GR0 = 0.5, GR1 = 1.5, GA0 = 100 * DEG, GA1 = 170 * DEG;
+const glass = new THREE.Group(); doorRoot.add(glass);
+{
+  const g = new THREE.ShapeGeometry(sectorShape(GR0, GR1, GA0, GA1), 48); g.translate(0, 0, GZ);
+  const m = new THREE.Mesh(g, mat.glass); m.renderOrder = 2; glass.add(m);
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: 0xd8f6ff, transparent: true, opacity: .8 }));
+  glass.add(e);
+}
+const IMPACT = new THREE.Vector2(...polar(1.3, 125 * DEG));
+const shards = []; const shardG = new THREE.Group(); doorRoot.add(shardG);
+{
+  const rnd = rngFrom(11), NR = 4, NA = 7, grid = [];
+  for (let i = 0; i <= NR; i++) { grid.push([]); for (let j = 0; j <= NA; j++) {
+    let r = GR0 + (GR1 - GR0) * i / NR, a = GA0 + (GA1 - GA0) * j / NA;
+    if (i > 0 && i < NR) r += (rnd() - .5) * 0.12;
+    if (j > 0 && j < NA) a += (rnd() - .5) * 0.07;
+    grid[i].push(new THREE.Vector2(r * Math.cos(a), r * Math.sin(a)));
+  } }
+  const tri = (p, q, s) => {
+    const c = p.clone().add(q).add(s).divideScalar(3);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([p.x - c.x, p.y - c.y, 0, q.x - c.x, q.y - c.y, 0, s.x - c.x, s.y - c.y, 0], 3));
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, mat.shard); m.renderOrder = 2; shardG.add(m);
+    const d = c.clone().sub(IMPACT); const len = Math.max(d.length(), 0.05); d.divideScalar(len);
+    shards.push({ m, c, d, push: 0.08 + 0.22 / (1 + len * 2) + rnd() * 0.06, ax: new THREE.Vector3(rnd() - .5, rnd() - .5, rnd() - .5).normalize(), sp: 2 + rnd() * 5, delay: rnd() * 0.25 });
+  };
+  for (let i = 0; i < NR; i++) for (let j = 0; j < NA; j++) {
+    const a = grid[i][j], b = grid[i + 1][j], c = grid[i + 1][j + 1], d = grid[i][j + 1];
+    if ((i + j) % 2) { tri(a, b, c); tri(a, c, d); } else { tri(a, b, d); tri(b, c, d); }
+  }
+}
+
+/* drill + sparks */
+const drill = new THREE.Group(); drill.position.set(IMPACT.x, IMPACT.y, 3); doorRoot.add(drill);
+{
+  const spin = new THREE.Group(); drill.add(spin); drill.userData.spin = spin;
+  add(spin, new THREE.ConeGeometry(0.035, 0.08, 20).rotateX(-Math.PI / 2), mat.bit, 0, 0, 0.04);
+  add(spin, cylZ(0.035, 0.7, 20), mat.bit, 0, 0, 0.43);
+  add(spin, cylZ(0.12, 0.3, 24), mat.drill, 0, 0, 0.93);
+  add(drill, cylZ(0.21, 0.85, 32), mat.drill, 0, 0, 1.5);
+  add(drill, new THREE.BoxGeometry(0.16, 0.5, 0.22), mat.drill, 0, -0.3, 1.55);
+}
+const NSP = 80, spPos = new Float32Array(NSP * 3), spSeed = [];
+{ const r = rngFrom(5); for (let i = 0; i < NSP; i++) spSeed.push({ a: r() * FULL, v: 0.25 + r() * 0.55, o: r(), z: r() }); }
+const spGeo = new THREE.BufferGeometry(); spGeo.setAttribute('position', new THREE.BufferAttribute(spPos, 3));
+const sparks = new THREE.Points(spGeo, new THREE.PointsMaterial({ color: 0xffc46b, size: 0.045, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+sparks.frustumCulled = false; doorRoot.add(sparks);
+
+/* ---------- labels ---------- */
+const linkAnchor = anchor(doorRoot, 0, 0, 0);
+const LABELS = {
+  door: ['Door · solid steel', anchor(doorRoot, ...polar(R, 222 * DEG, H))],
+  hinge: ['Hinge', anchor(scene, -2.35, 0.9, 0.75)],
+  frame: ['Frame', anchor(scene, ...polar(2.55, -38 * DEG, H))],
+  section: ['Section cut', anchor(scene, ...polar(2.62, 22 * DEG, ZC))],
+  wheel: ['Handwheel', anchor(camG, ...polar(0.82, 45 * DEG, 1.02))],
+  cam: ['Cam plate', anchor(camG, ...polar(0.8, 78 * DEG, -0.22))],
+  link: ['Linkage arm', linkAnchor],
+  bolt: ['Locking bolt', anchor(bolts[1].c, 0.6, 0, 0.11)],
+  seat: ['Bolt seats in frame', anchor(scene, ...polar(2.35, 15 * DEG, ZC))],
+  dial: ['Combination dial', anchor(dialG, 0, 0, 0.2)],
+  combCase: ['Lock case', anchor(combG, 1.2, -0.17, 0.23)],
+  combLever: ['Combination lever', anchor(combLever, 0, 0, 0.03)],
+  timeCase: ['Time lock', anchor(timeG, 1.33, 0.2, 0.23)],
+  clocks: ['3 clock movements', anchor(timeG, 1.1, -0.15, 0.24)],
+  timeLever: ['Time-lock lever', anchor(timeLever, 0, 0, 0.03)],
+  drill: ['Drill attack', anchor(drill, 0, 0.2, 1.4)],
+  glass: ['Tempered glass', anchor(doorRoot, ...polar(1.42, 104 * DEG, GZ))],
+  relocker: ['Relocker bolt', anchor(plunger, 0, 0, 0.05)],
+};
+const tagsEl = $('tags'), tagEls = {};
+for (const [k, [text]] of Object.entries(LABELS)) {
+  const d = document.createElement('div'); d.className = 'tag';
+  d.innerHTML = '<em></em><i></i><span></span>'; d.querySelector('span').textContent = text;
+  tagsEl.appendChild(d); tagEls[k] = d;
+}
+
+/* ---------- camera keys: [start pos, start target, end pos, end target] ---------- */
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const CAM = [
+  [V(8.6, 2.3, 10.6), V(-0.6, 0, 0.4), V(5.6, 1.7, 11.6), V(-0.8, 0, 0.4)],
+  [V(3.6, 1.8, 11.2), V(-0.3, 0, 0), V(2.2, 1.2, 10.2), V(0, 0, 0)],
+  [V(6.8, 5.0, 8.8), V(0.7, 0.7, 0), V(6.0, 5.3, 7.6), V(0.9, 0.9, 0)],
+  [V(4.3, 3.4, 5.7), V(0.35, 0.35, 0.1), V(3.6, 3.9, 5.0), V(0.3, 0.4, 0.1)],
+  [V(4.6, 3.2, 3.0), V(1.5, 1.35, 0), V(4.0, 3.7, 2.5), V(1.6, 1.6, 0)],
+  [V(-0.9, 3.6, 5.3), V(-0.5, 0.75, 0.15), V(-1.5, 3.2, 5.0), V(-0.55, 0.7, 0.15)],
+  [V(-2.4, 3.2, 4.6), V(-0.85, 0.45, 0.15), V(-2.8, 2.7, 4.4), V(-0.9, 0.4, 0.15)],
+  [V(0.2, 3.4, 6.6), V(-0.6, 0.8, 0.5), V(-0.9, 3.0, 5.4), V(-0.65, 0.75, 0.25)],
+  [V(5.2, 3.7, 9.6), V(0, 0.2, 0), V(7.6, 3.2, 11.2), V(0, 0, 0)],
+];
+const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _p2 = new THREE.Vector3(), _t2 = new THREE.Vector3();
+function camAt(i, u, outP, outT){
+  const k = CAM[i], e = ease(u);
+  outP.lerpVectors(k[0], k[2], e); outT.lerpVectors(k[1], k[3], e);
+}
+
+/* ---------- state ---------- */
+let t = 0, playing = false, userCam = false, camBlend = null;
+let voiceOn = false, speaking = false, lastBeat = -1;
+let audio = null, scale = 1;
+let showLabels = true;
+const cur = { i: 0, u: 0, sec: 0 };
+
+function locate(time){
+  let i = BEATS.findIndex(b => time < b.end);
+  if (i < 0) i = BEATS.length - 1;
+  const b = BEATS[i];
+  cur.i = i; cur.sec = clamp(time - b.start, 0, b.dur); cur.u = cur.sec / b.dur;
+}
+const P = (i, a = 0, b = 1) => cur.i > i ? 1 : cur.i < i ? 0 : seg(cur.u, a, b);
+
+function setQuadOpacity(m, op){
+  const tr = op < 0.999;
+  if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; }
+  m.opacity = op; m.depthWrite = op > 0.5;
+}
+
+const UB = 0.475;
+function update(time, now){
+  locate(time);
+  const B = cur.i;
+
+  // 0–1: door swings closed
+  pivot.rotation.y = -(1 - ease(P(1, 0.08, 0.72))) * 78 * DEG;
+
+  // 2: quarter section lifts away
+  const cut = ease(P(2, 0.12, 0.8)), qOp = 1 - P(2, 0.42, 0.85);
+  quadDoor.position.set(cut * 1.3, cut * 1.3, cut * 1.6);
+  quadFrame.position.set(cut * 1.8, cut * 1.8, cut * 1.2);
+  setQuadOpacity(mat.doorQuad, qOp); setQuadOpacity(mat.frameQuad, qOp);
+  quadDoor.visible = quadFrame.visible = qOp > 0.001;
+
+  // 3: handwheel + cam throw the bolts
+  const phi = lerp(PHI0, 0, ease(P(3, 0.18, 0.92)));
+  camG.rotation.z = phi;
+  const s = boltS(phi);
+  for (const b of bolts) {
+    b.c.position.x = s;
+    const px = RC * Math.cos(b.th + phi), py = RC * Math.sin(b.th + phi);
+    const bx = s * Math.cos(b.th), by = s * Math.sin(b.th);
+    const dx = bx - px, dy = by - py;
+    b.link.position.set((px + bx) / 2, (py + by) / 2, -0.125);
+    b.link.scale.x = Math.hypot(dx, dy);
+    b.link.rotation.z = Math.atan2(dy, dx);
+  }
+  linkAnchor.position.copy(bolts[2].link.position);
+
+  // 5–7: front plate goes ghost so the lock cavity shows
+  const ghost = clamp(P(5, 0, 0.22) - P(8, 0, 0.45));
+  setQuadOpacity(mat.plate, 1 - 0.86 * ghost);
+  plate.castShadow = ghost < 0.3;
+
+  // 5: dial L-R-L, lever drops
+  const d = P(5);
+  const turns = ease(seg(d, 0.08, 0.3)) * 3 - ease(seg(d, 0.32, 0.46)) * 2 + ease(seg(d, 0.48, 0.58)) * 1.37;
+  knob.rotation.z = turns * FULL;
+  combLever.position.x = lerp(0.64, 0.40, ease(P(5, 0.62, 0.8))) + 0.18;
+
+  // 6: time lock
+  for (const h of hands) { h.mh.rotation.z = -time * 1.6 - h.ph; h.hh.rotation.z = -time * 0.14 - h.ph * 2; }
+  timeLever.position.x = lerp(0.64, 0.40, ease(P(6, 0.55, 0.72))) + 0.18;
+
+  // 7: drill, glass, relocker
+  const u7 = B === 7 ? cur.u : (B > 7 ? 1 : 0);
+  let tip = 3;
+  if (u7 < 0.3) tip = lerp(3, H + 0.003, ease(seg(u7, 0.08, 0.3)));
+  else if (u7 < 0.5) tip = lerp(H + 0.003, 0.235, seg(u7, 0.3, 0.5));
+  else if (u7 < 0.75) tip = 0.235;
+  else tip = lerp(0.235, 3.2, ease(seg(u7, 0.75, 0.92)));
+  drill.position.z = tip;
+  drill.visible = B === 7 && u7 > 0.06 && u7 < 0.93;
+  drill.userData.spin.rotation.z = time * 40;
+  const broken = B > 7 || (B === 7 && cur.u >= UB);
+  glass.visible = !broken; wire.visible = !broken;
+  const tau = B === 7 ? (cur.u - UB) * BEATS[7].dur : 99;
+  const sOp = broken ? 0.55 * (1 - seg(tau, 1.6, 3.4)) : 0;
+  mat.shard.opacity = sOp; shardG.visible = sOp > 0.002;
+  if (shardG.visible) for (const sh of shards) {
+    const tt = Math.max(0, tau - sh.delay * 0.4), k = 1 - Math.exp(-tt * 8);
+    sh.m.position.set(sh.c.x + sh.d.x * sh.push * k, sh.c.y + sh.d.y * sh.push * k - Math.min(1.1, 1.4 * Math.max(0, tt - 0.12) ** 2), GZ + 0.02 * k);
+    const ang = Math.min(tt, 2) * sh.sp;
+    sh.m.rotation.set(sh.ax.x * ang, sh.ax.y * ang, sh.ax.z * ang);
+  }
+  plunger.position.x = lerp(0.66, 0.40, ease(P(7, 0.49, 0.53))) + 0.17;
+  const sparkOn = B === 7 && u7 > 0.3 && u7 < 0.5;
+  sparks.visible = sparkOn;
+  if (sparkOn) for (let i = 0; i < NSP; i++) {
+    const sd = spSeed[i], ph = frac(sd.o + time * 2.2), dd = ph * sd.v;
+    spPos[i * 3] = IMPACT.x + Math.cos(sd.a) * dd;
+    spPos[i * 3 + 1] = IMPACT.y + Math.sin(sd.a) * dd - 0.9 * ph * ph;
+    spPos[i * 3 + 2] = H + 0.02 + ph * 0.45 * sd.z;
+  }
+  if (sparkOn) spGeo.attributes.position.needsUpdate = true;
+
+  // highlights
+  for (const k of hlMats) mat[k].emissiveIntensity = 0;
+  const pulse = 0.42 + 0.22 * Math.sin(now * 0.005);
+  const hl = (names, w = 1) => { for (const k of names) { mat[k].emissive.copy(HL); mat[k].emissiveIntensity = Math.max(mat[k].emissiveIntensity, w * pulse); } };
+  if (B === 3) hl(['wheel', 'cam', 'link'], seg(cur.u, 0.05, 0.2));
+  if (B === 4) { hl(['bolt'], seg(cur.u, 0.0, 0.15)); hl(['hinge'], seg(cur.u, 0.55, 0.7) * (1 - seg(cur.u, 0.92, 1))); }
+  if (B === 5) hl(['comb', 'combLever'], seg(cur.u, 0.1, 0.3));
+  if (B === 6) hl(['time', 'timeLever'], seg(cur.u, 0.1, 0.3));
+  if (B === 7) { hl(['glass'], seg(cur.u, 0.15, 0.3) * (1 - seg(cur.u, 0.45, 0.48))); hl(['relocker', 'relHouse'], seg(cur.u, 0.48, 0.56)); }
+  if (B === 8) hl(['combLever', 'timeLever', 'relocker'], seg(cur.u, 0.2, 0.4));
+
+  // camera
+  if (!userCam) {
+    camAt(B, cur.u, _p, _t);
+    if (B > 0) {
+      const w = ease(clamp(cur.sec / 1.8));
+      const prev = CAM[B - 1];
+      _p.lerpVectors(prev[2], _p, w); _t.lerpVectors(prev[3], _t, w);
+    }
+    if (camBlend) {
+      const w = ease(clamp((now - camBlend.t0) / 900));
+      _p.lerpVectors(camBlend.p, _p, w); _t.lerpVectors(camBlend.t, _t, w);
+      if (w >= 1) camBlend = null;
+    }
+    camera.position.copy(_p); controls.target.copy(_t); camera.lookAt(_t);
+  } else controls.update();
+}
+
+/* ---------- labels projection ---------- */
+const _w = new THREE.Vector3();
+function placeLabels(){
+  const active = showLabels ? new Set(BEATS[cur.i].labels) : new Set();
+  const lateIn = cur.sec > 0.9;
+  const W = stageEl.clientWidth, Hh = stageEl.clientHeight;
+  for (const [k, [, obj]] of Object.entries(LABELS)) {
+    const el = tagEls[k];
+    let on = active.has(k) && lateIn && obj.parent && isVisible(obj);
+    if (k === 'drill' && !drill.visible) on = false;
+    if (on) {
+      obj.getWorldPosition(_w); _w.project(camera);
+      const x = (_w.x + 1) / 2 * W, y = (1 - _w.y) / 2 * Hh;
+      if (_w.z > 1 || x < 8 || x > W - 8 || y < 40 || y > Hh - 8) on = false;
+      else { el.style.transform = `translate(${x}px,${y}px)`; el.classList.toggle('flip', x > W * 0.6); }
+    }
+    el.classList.toggle('on', on);
+  }
+}
+function isVisible(o){ for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; }
+
+/* ---------- controls ---------- */
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.enablePan = false; controls.minDistance = 2; controls.maxDistance = 24;
+controls.addEventListener('start', () => { userCam = true; if (playing) pause(); });
+
+const playBtn = $('play'), scrub = $('scrub'), timeEl = $('time');
+const captionEl = $('caption'), beatsEl = $('beats'), ticksEl = $('ticks');
+
+function buildList(){
+  beatsEl.innerHTML = ''; ticksEl.innerHTML = '';
+  BEATS.forEach((b, i) => {
+    const li = document.createElement('li');
+    const bt = document.createElement('button'); bt.className = 'beat'; bt.type = 'button';
+    bt.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span class="hd"><span class="tt"></span><span class="tc">${fmt(b.start * scale)}</span></span><span class="tx"></span>`;
+    bt.querySelector('.tt').textContent = b.title; bt.querySelector('.tx').textContent = b.text;
+    bt.addEventListener('click', () => { seek(b.start + 0.001); play(true); });
+    li.appendChild(bt); beatsEl.appendChild(li); b.el = bt;
+    if (i > 0) { const tk = document.createElement('i'); tk.style.left = (b.start / TOTAL * 100) + '%'; ticksEl.appendChild(tk); }
+  });
+  $('runtime').textContent = fmt(TOTAL * scale);
+}
+buildList();
+
+function renderCaption(i){
+  captionEl.innerHTML = '';
+  BEATS[i].words.forEach((w, k) => {
+    const s = document.createElement('span'); s.className = 'w'; s.textContent = w;
+    captionEl.appendChild(s); if (k < BEATS[i].words.length - 1) captionEl.appendChild(document.createTextNode(' '));
+  });
+}
+function syncUI(){
+  if (cur.i !== lastBeat) {
+    renderCaption(cur.i);
+    BEATS.forEach((b, k) => b.el.classList.toggle('cur', k === cur.i));
+    $('chipN').textContent = String(cur.i + 1).padStart(2, '0');
+    $('chipT').textContent = BEATS[cur.i].title;
+  }
+  const n = Math.floor((cur.sec + 0.15) * 2.6);
+  const ws = captionEl.querySelectorAll('.w');
+  ws.forEach((w, k) => w.classList.toggle('on', k < n));
+  const pct = t / TOTAL * 100;
+  scrub.value = Math.round(t / TOTAL * 1000);
+  scrub.style.setProperty('--p', pct + '%');
+  timeEl.textContent = fmt(t * scale) + ' / ' + fmt(TOTAL * scale);
+}
+
+/* speech */
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let voices = [];
+if (synth) { const lv = () => { voices = synth.getVoices(); }; lv(); synth.addEventListener?.('voiceschanged', lv); }
+else { $('voice').disabled = true; $('voice').title = 'This browser has no built-in voice'; }
+function speak(i){
+  if (!synth) return;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(BEATS[i].text);
+  const en = voices.filter(v => /^en/i.test(v.lang));
+  u.voice = en.find(v => /natural|neural|google|samantha|daniel/i.test(v.name)) || en[0] || null;
+  u.rate = 1.0; u.pitch = 0.95;
+  speaking = true;
+  u.onend = u.onerror = () => { if (u === current) speaking = false; };
+  current = u; synth.speak(u);
+}
+let current = null;
+function stopSpeech(){ if (synth) synth.cancel(); speaking = false; current = null; }
+
+function setPlayIcon(){
+  $('icoPlay').hidden = playing; $('icoPause').hidden = !playing;
+  playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+}
+function play(fromUser){
+  if (t >= TOTAL - 0.01) seek(0);
+  if (userCam) { userCam = false; camBlend = { p: camera.position.clone(), t: controls.target.clone(), t0: performance.now() }; }
+  playing = true; setPlayIcon();
+  if (audio) { audio.currentTime = t * scale; audio.play().catch(() => {}); }
+  else if (voiceOn) { locate(t); seek(BEATS[cur.i].start + 0.001); speak(cur.i); }
+}
+function pause(){
+  playing = false; setPlayIcon();
+  if (audio) audio.pause();
+  stopSpeech();
+}
+function seek(time){
+  t = clamp(time, 0, TOTAL);
+  stopSpeech();
+  if (audio) audio.currentTime = t * scale;
+  if (userCam) { userCam = false; camBlend = { p: camera.position.clone(), t: controls.target.clone(), t0: performance.now() }; }
+  locate(t); lastBeat = -2;
+}
+
+playBtn.addEventListener('click', () => playing ? pause() : play(true));
+scrub.addEventListener('input', () => { seek(scrub.value / 1000 * TOTAL); });
+document.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input,button,label')) return;
+  if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(true); }
+  if (e.code === 'ArrowRight') seek(t + 5);
+  if (e.code === 'ArrowLeft') seek(t - 5);
+});
+function toggle(btn, on){ btn.setAttribute('aria-pressed', String(on)); }
+$('voice').addEventListener('click', () => {
+  voiceOn = !voiceOn; toggle($('voice'), voiceOn);
+  if (voiceOn) { locate(t); seek(BEATS[cur.i].start + 0.001); play(true); }
+  else stopSpeech();
+});
+$('caps').addEventListener('click', () => { const on = captionEl.hidden; captionEl.hidden = !on; toggle($('caps'), on); });
+$('lbls').addEventListener('click', () => { showLabels = !showLabels; toggle($('lbls'), showLabels); });
+$('voFile').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  pause();
+  if (audio) { audio.pause(); URL.revokeObjectURL(audio.src); }
+  const a = new Audio(URL.createObjectURL(f));
+  a.addEventListener('loadedmetadata', () => {
+    if (!isFinite(a.duration) || a.duration <= 0) return;
+    audio = a; scale = a.duration / TOTAL;
+    voiceOn = false; toggle($('voice'), false); $('voice').disabled = true;
+    $('voLabel').childNodes[0].textContent = 'VO: ' + f.name.slice(0, 18);
+    toggle($('voLabel'), true);
+    buildList(); seek(0); lastBeat = -2; play(true);
+  });
+  a.addEventListener('ended', () => { t = TOTAL; pause(); });
+});
+
+/* ---------- sizing + loop ---------- */
+function resize(){
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.fov = w / h < 1.5 ? 42 : 35;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stageEl); resize();
+
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (playing) {
+    if (audio) t = clamp(audio.currentTime / scale, 0, TOTAL);
+    else {
+      let nt = t + dt;
+      locate(t);
+      const end = BEATS[cur.i].end;
+      if (voiceOn && speaking && nt >= end - 0.02) nt = end - 0.02;  // hold until the line finishes
+      t = Math.min(nt, TOTAL);
+      if (t >= TOTAL) pause();
+    }
+    locate(t);
+    if (voiceOn && !audio && cur.i !== lastBeat && lastBeat >= 0) speak(cur.i);
+  }
+  update(t, now);
+  syncUI();
+  lastBeat = cur.i;
+  placeLabels();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+if (reduce) { t = BEATS[4].start + BEATS[4].dur * 0.7; playing = false; }
+else playing = true;
+locate(t); setPlayIcon();
+requestAnimationFrame(frame);
+</script>
